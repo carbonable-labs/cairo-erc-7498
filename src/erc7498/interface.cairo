@@ -1,8 +1,11 @@
 use starknet::ContractAddress;
+use starknet::contract_address_const;
 
 const IERC7498_ID: felt252 = 0x1ac61e13;
 
-const BURN_ADDRESS: felt252 = 0x00000000000000000000000000000000000000000000000000000000000dEaD;
+fn BURN_ADDRESS() -> ContractAddress {
+    contract_address_const::<0xdEaD>()
+}
 
 #[derive(Clone, PartialEq, Drop, Serde, starknet::Store)]
 enum ItemType {
@@ -49,6 +52,16 @@ struct ConsiderationItem {
     recipient: ContractAddress
 }
 
+// #[derive(Drop, Serde, starknet::Store)]
+// struct ConsiderationItemStorage {
+//     item_type: ItemType,
+//     token: ContractAddress,
+//     identifier_or_criteria: u256,
+//     start_amount: u256,
+//     end_amount: u256,
+//     recipient: ContractAddress
+// }
+
 #[derive(Clone, PartialEq, Drop, Serde)]
 struct CampaignRequirements {
     offer: Array<OfferItem>,
@@ -85,14 +98,41 @@ struct CampaignParamsStorage {
 #[starknet::interface]
 trait IERC7498<TState> {
     fn get_campaign(self: @TState, campaign_id: u256) -> (CampaignParams, ByteArray, u256);
-    fn create_campaign(ref self: TState, params: CampaignParams, uri: ByteArray) -> u256;
-    fn update_campaign(
-        ref self: TState, campaign_id: u256, params: CampaignParams, uri: ByteArray
-    );
+    // fn create_campaign(ref self: TState, params: CampaignParams, uri: ByteArray) -> u256;
+    fn update_campaign(ref self: TState, campaign_id: u256, params: CampaignParams, uri: ByteArray);
     fn redeem(
         ref self: TState,
         consideration_token_ids: Span<u256>,
         recipient: ContractAddress,
         extra_data: Span<felt252>
     );
+}
+
+const IREDEMPTION_MINTABLE_ID: felt252 = 0x81fe13c2;
+
+#[starknet::interface]
+trait IRedemptionMintable<TState> {
+    fn mint_redemption(
+        ref self: TState,
+        campaign_id: u256,
+        recipient: ContractAddress,
+        offer: OfferItem,
+        consideration: Span<ConsiderationItem>,
+    // trait_redemptions: Span<TraitRedemption>
+    );
+}
+
+#[starknet::interface]
+trait IERC721Burnable<TState> {
+    fn burn(ref self: TState, token_id: u256);
+}
+
+#[starknet::interface]
+trait IERC1155Burnable<TState> {
+    fn burn(ref self: TState, from: ContractAddress, token_id: u256, value: u256);
+}
+
+#[starknet::interface]
+trait IERC20Burnable<TState> {
+    fn burn(ref self: TState, account: ContractAddress, amount: u256);
 }
