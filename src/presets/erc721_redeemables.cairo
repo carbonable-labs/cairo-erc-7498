@@ -2,14 +2,14 @@ use starknet::ContractAddress;
 use cairo_erc_7498::erc7498::interface::CampaignParams;
 
 #[starknet::interface]
-trait IERC721Redeemables<TState> {
+pub trait IERC721Redeemables<TState> {
     fn mint(ref self: TState, to: ContractAddress, token_id: u256);
     fn burn(ref self: TState, token_id: u256);
     fn create_campaign(ref self: TState, params: CampaignParams, uri: ByteArray) -> u256;
 }
 
 #[starknet::interface]
-trait IERC721RedeemablesMixin<TState> {
+pub trait IERC721RedeemablesMixin<TState> {
     // IERC721Redeemables
     fn mint(ref self: TState, to: ContractAddress, token_id: u256);
     // IERC721Burnable
@@ -50,7 +50,7 @@ trait IERC721RedeemablesMixin<TState> {
 }
 
 #[starknet::contract]
-mod ERC721Redeemables {
+pub mod ERC721Redeemables {
     use starknet::ContractAddress;
     use starknet::get_caller_address;
     use openzeppelin::introspection::src5::SRC5Component;
@@ -64,18 +64,14 @@ mod ERC721Redeemables {
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: ERC7498Component, storage: erc7498, event: ERC7498Event);
 
-    // SRC5
-    #[abi(embed_v0)]
-    impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
-
     // Ownable
     #[abi(embed_v0)]
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
 
-    // ERC721
+    // ERC721Mixin
     #[abi(embed_v0)]
-    impl ERC721Impl = ERC721Component::ERC721Impl<ContractState>;
+    impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
 
     // ERC7498
@@ -136,7 +132,7 @@ mod ERC721Redeemables {
             ref self: ContractState, params: CampaignParams, uri: ByteArray
         ) -> u256 {
             self.ownable.assert_only_owner();
-            self.erc7498._create_campaign(params, uri)
+            self.erc7498._create_campaign(@params, uri)
         }
     }
 }

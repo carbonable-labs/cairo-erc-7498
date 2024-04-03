@@ -2,7 +2,7 @@ use starknet::ContractAddress;
 use cairo_erc_7498::erc7498::interface::{OfferItem, ConsiderationItem};
 
 #[starknet::interface]
-trait IERC721RedemptionMintable<TState> {
+pub trait IERC721RedemptionMintable<TState> {
     fn mint_redemption(
         ref self: TState,
         campaign_id: u256,
@@ -14,7 +14,7 @@ trait IERC721RedemptionMintable<TState> {
 }
 
 #[starknet::interface]
-trait IERC721RedemptionMintableMixin<TState> {
+pub trait IERC721RedemptionMintableMixin<TState> {
     // IRedemptionMintable
     fn mint_redemption(
         ref self: TState,
@@ -50,7 +50,7 @@ trait IERC721RedemptionMintableMixin<TState> {
 }
 
 #[starknet::contract]
-mod ERC721RedemptionMintable {
+pub mod ERC721RedemptionMintable {
     use starknet::ContractAddress;
     use starknet::get_caller_address;
     use openzeppelin::introspection::src5::SRC5Component;
@@ -63,18 +63,14 @@ mod ERC721RedemptionMintable {
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
 
-    // SRC5
-    #[abi(embed_v0)]
-    impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
-
     // Ownable
     #[abi(embed_v0)]
     impl OwnableImpl = OwnableComponent::OwnableImpl<ContractState>;
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
 
-    // ERC721
+    // ERC721Mixin
     #[abi(embed_v0)]
-    impl ERC721Impl = ERC721Component::ERC721Impl<ContractState>;
+    impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
 
     #[storage]

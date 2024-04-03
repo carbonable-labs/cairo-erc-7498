@@ -1,25 +1,23 @@
 use starknet::ContractAddress;
 use starknet::contract_address_const;
 
-const IERC7498_ID: felt252 = 0x1ac61e13;
+pub const IERC7498_ID: felt252 = 0x1ac61e13;
 
-fn BURN_ADDRESS() -> ContractAddress {
+pub fn BURN_ADDRESS() -> ContractAddress {
     contract_address_const::<0xdEaD>()
 }
 
-#[derive(Clone, PartialEq, Drop, Serde, starknet::Store)]
-enum ItemType {
-    // 0: ETH on mainnet, MATIC on polygon, etc.
-    NATIVE,
-    // 1: ERC20 items (ERC777 and ERC20 analogues could also technically work)
+#[derive(Copy, PartialEq, Drop, Serde, starknet::Store)]
+pub enum ItemType {
+    // 0: ERC20 items (ERC777 and ERC20 analogues could also technically work)
     ERC20,
-    // 2: ERC721 items
+    // 1: ERC721 items
     ERC721,
-    // 3: ERC1155 items
+    // 2: ERC1155 items
     ERC1155,
-    // 4: ERC721 items where a number of tokenIds are supported
+    // 3: ERC721 items where a number of tokenIds are supported
     ERC721_WITH_CRITERIA,
-    // 5: ERC1155 items where a number of ids are supported
+    // 4: ERC1155 items where a number of ids are supported
     ERC1155_WITH_CRITERIA
 }
 
@@ -30,73 +28,63 @@ enum ItemType {
 //      depending on the item type, and a start and end amount that support
 //      increasing or decreasing amounts over the duration of the respective
 //      order.
-#[derive(Clone, PartialEq, Drop, Serde, starknet::Store)]
-struct OfferItem {
-    item_type: ItemType,
-    token: ContractAddress,
-    identifier_or_criteria: u256,
-    start_amount: u256,
-    end_amount: u256,
+#[derive(Copy, PartialEq, Drop, Serde, starknet::Store)]
+pub struct OfferItem {
+    pub item_type: ItemType,
+    pub token: ContractAddress,
+    pub identifier_or_criteria: u256,
+    pub start_amount: u256,
+    pub end_amount: u256,
 }
 
 // @dev A consideration item has the same five components as an offer item and
 //      an additional sixth component designating the required recipient of the
 //      item.
-#[derive(Clone, PartialEq, Drop, Serde, starknet::Store)]
-struct ConsiderationItem {
-    item_type: ItemType,
-    token: ContractAddress,
-    identifier_or_criteria: u256,
-    start_amount: u256,
-    end_amount: u256,
-    recipient: ContractAddress
+#[derive(Copy, PartialEq, Drop, Serde, starknet::Store)]
+pub struct ConsiderationItem {
+    pub item_type: ItemType,
+    pub token: ContractAddress,
+    pub identifier_or_criteria: u256,
+    pub start_amount: u256,
+    pub end_amount: u256,
+    pub recipient: ContractAddress
 }
 
-// #[derive(Drop, Serde, starknet::Store)]
-// struct ConsiderationItemStorage {
-//     item_type: ItemType,
-//     token: ContractAddress,
-//     identifier_or_criteria: u256,
-//     start_amount: u256,
-//     end_amount: u256,
-//     recipient: ContractAddress
-// }
-
-#[derive(Clone, PartialEq, Drop, Serde)]
-struct CampaignRequirements {
-    offer: Array<OfferItem>,
-    consideration: Array<ConsiderationItem>,
+#[derive(Copy, PartialEq, Drop, Serde)]
+pub struct CampaignRequirements {
+    pub offer: Span<OfferItem>,
+    pub consideration: Span<ConsiderationItem>,
 // trait_redemptions: Array<TraitRedemption>
 }
 
-#[derive(Drop, Serde, starknet::Store)]
-struct CampaignRequirementsStorage {
-    offer_len: u32,
-    consideration_len: u32
+#[derive(Copy, Drop, Serde, starknet::Store)]
+pub struct CampaignRequirementsStorage {
+    pub offer_len: u32,
+    pub consideration_len: u32
 }
 
-#[derive(Clone, PartialEq, Drop, Serde)]
-struct CampaignParams {
-    start_time: u32,
-    end_time: u32,
-    max_campaign_redemptions: u32,
-    manager: ContractAddress,
-    signer: ContractAddress,
-    requirements: Array<CampaignRequirements>
+#[derive(Copy, PartialEq, Drop, Serde)]
+pub struct CampaignParams {
+    pub start_time: u32,
+    pub end_time: u32,
+    pub max_campaign_redemptions: u32,
+    pub manager: ContractAddress,
+    pub signer: ContractAddress,
+    pub requirements: Span<CampaignRequirements>
 }
 
-#[derive(Drop, Serde, starknet::Store)]
-struct CampaignParamsStorage {
-    start_time: u32,
-    end_time: u32,
-    max_campaign_redemptions: u32,
-    manager: ContractAddress,
-    signer: ContractAddress,
-    requirements_len: u32,
+#[derive(Copy, Drop, Serde, starknet::Store)]
+pub struct CampaignParamsStorage {
+    pub start_time: u32,
+    pub end_time: u32,
+    pub max_campaign_redemptions: u32,
+    pub manager: ContractAddress,
+    pub signer: ContractAddress,
+    pub requirements_len: u32,
 }
 
 #[starknet::interface]
-trait IERC7498<TState> {
+pub trait IERC7498<TState> {
     fn get_campaign(self: @TState, campaign_id: u256) -> (CampaignParams, ByteArray, u256);
     // fn create_campaign(ref self: TState, params: CampaignParams, uri: ByteArray) -> u256;
     fn update_campaign(ref self: TState, campaign_id: u256, params: CampaignParams, uri: ByteArray);
@@ -108,10 +96,10 @@ trait IERC7498<TState> {
     );
 }
 
-const IREDEMPTION_MINTABLE_ID: felt252 = 0x81fe13c2;
+pub const IREDEMPTION_MINTABLE_ID: felt252 = 0x81fe13c2;
 
 #[starknet::interface]
-trait IRedemptionMintable<TState> {
+pub trait IRedemptionMintable<TState> {
     fn mint_redemption(
         ref self: TState,
         campaign_id: u256,
@@ -123,16 +111,16 @@ trait IRedemptionMintable<TState> {
 }
 
 #[starknet::interface]
-trait IERC721Burnable<TState> {
+pub trait IERC721Burnable<TState> {
     fn burn(ref self: TState, token_id: u256);
 }
 
 #[starknet::interface]
-trait IERC1155Burnable<TState> {
+pub trait IERC1155Burnable<TState> {
     fn burn(ref self: TState, from: ContractAddress, token_id: u256, value: u256);
 }
 
 #[starknet::interface]
-trait IERC20Burnable<TState> {
+pub trait IERC20Burnable<TState> {
     fn burn(ref self: TState, account: ContractAddress, amount: u256);
 }

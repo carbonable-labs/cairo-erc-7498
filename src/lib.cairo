@@ -1,10 +1,10 @@
-mod erc7498 {
-    mod interface;
-    mod erc7498;
+pub mod erc7498 {
+    pub mod interface;
+    pub mod erc7498;
 }
 
-mod presets {
-    mod erc721_redeemables;
-    mod erc721_redemption;
+pub mod presets {
+    pub mod erc721_redeemables;
+    pub mod erc721_redemption;
 }
 
